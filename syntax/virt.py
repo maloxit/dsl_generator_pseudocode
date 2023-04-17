@@ -45,9 +45,9 @@ def GetSyntaxDesription(diagramsDir, sgiFilePath):
             node = Node(nodeType, str)
             virtNodes[dotNode.get_name()] = node
             if NodeType.NONTERMINAL == nodeType:
-                node.nonterminal = Nonterminal(str)
+                node.nonterminal = str
             elif NodeType.TERMINAL == nodeType:
-                node.terminal = Terminal(str)
+                node.terminal = str
             elif NodeType.START == nodeType:
                 startArray.append(node)
             elif NodeType.END == nodeType:
@@ -65,6 +65,6 @@ def GetSyntaxDesription(diagramsDir, sgiFilePath):
                     edge[1] = edge[1][1:-1]
                 node.nextNodes.append((virtNodes[edge[0]], edge[1]))
 
-        res[Nonterminal[diagram.get_name()]] = startArray[0]
+        res[diagram.get_name()] = startArray[0]
 
     return res

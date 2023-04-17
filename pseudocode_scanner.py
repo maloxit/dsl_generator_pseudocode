@@ -1,4 +1,3 @@
-from dsl_info import Terminal, tokenRegularExpressions, keys
 from dsl_token import Token
 import sys
 import re
@@ -11,22 +10,22 @@ def __SkipSpaces(code, pos):
     return len(code)
 
 
-def __GetCurrentToken(code, pos):
+def __GetCurrentToken(code, pos, terms, keys):
     if code[pos] == '\n':
         token = Token(Token.Type.KEY)
-        token.terminalType = Terminal.key
+        token.terminalType = "key"
         token.str = '\\n'
         return token, pos + 1
-    for key, terminal in keys:
+    for key in keys:
         if code[pos : pos + len(key)] == key:
             if key[-1].isalpha() and pos + len(key) < len(code) and (code[pos + len(key)].isalpha() or code[pos + len(key)].isdigit() or code[pos + len(key)] == '_'):
                 continue
             token = Token(Token.Type.KEY)
-            token.terminalType = terminal
+            token.terminalType = "key"
             token.str = key
             return token, pos + len(token.str)
-    for terminal, regex in tokenRegularExpressions:
-        result = re.match(regex, code[pos:])
+    for terminal in terms.keys():
+        result = re.match(terms[terminal], code[pos:])
         if not result:
             continue
         token = Token(Token.Type.TERMINAL)
@@ -36,24 +35,13 @@ def __GetCurrentToken(code, pos):
     raise SyntaxError("Failed to recognize token")
 
 
-def Tokenize(code):
+def Tokenize(code, terms, keys):
     size = len(code)
     pos = 0
     tokens = []
     pos = __SkipSpaces(code, pos)
     while pos < size:
-        token, pos = __GetCurrentToken(code, pos)
+        token, pos = __GetCurrentToken(code, pos, terms, keys)
         tokens.append(token)
         pos = __SkipSpaces(code, pos)
     return tokens
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Need only one argument: program text path")
-        sys.exit()
-    with open(sys.argv[1], 'r') as file:
-        tokenList = Tokenize(file.read())
-        print("tokens:")
-        for token in tokenList:
-            print(f"TYPE: '{token.terminalType.name}', STRING: '{token.str}'.")

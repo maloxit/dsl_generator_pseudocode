@@ -1,6 +1,7 @@
 from pseudocode_scanner import Tokenize
 import graphviz
 from dsl_token import *
+from dsl_info import *
 from syntax import *
 import pathlib
 import os
@@ -16,7 +17,7 @@ def __RenderTokenStream(diagramName, tokenList, debugInfoDir):
     for token in tokenList:
         if Token.Type.TERMINAL == token.type:
             h.node(str(i),
-                   f"TERMINAL\ntype: {token.terminalType.name}\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""),
+                   f"TERMINAL\ntype: {token.terminalType}\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""),
                    shape='diamond')
         elif Token.Type.KEY == token.type:
             h.node(str(i), f"KEY\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""), shape='oval')
@@ -45,7 +46,7 @@ def __RenderAst(diagramName, ast, debugInfoDir):
             token = node[0].token
             if Token.Type.TERMINAL == token.type:
                 h.node(str(i),
-                       f"TERMINAL\ntype: {token.terminalType.name}\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""),
+                       f"TERMINAL\ntype: {token.terminalType}\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""),
                        shape='diamond')
             elif Token.Type.KEY == token.type:
                 h.node(str(i), f"KEY\nstring: {token.str}" + (f"\nattribute: {token.attribute}" if token.attribute else ""), shape='oval')
@@ -59,11 +60,11 @@ class ASTEncoder(json.JSONEncoder):
         if isinstance(obj, TreeNode):
             node: TreeNode= obj
             if TreeNode.Type.NONTERMINAL == node.type:
-                return {'nonterm': node.nonterminalType.name, 'content': node.childs}
+                return {'nonterm': node.nonterminalType, 'content': node.childs}
             else:
                 token = node.token
                 if Token.Type.TERMINAL == token.type:
-                    return {'term': token.terminalType.name, 'value': token.str}
+                    return {'term': token.terminalType, 'value': token.str}
                 elif Token.Type.KEY == token.type:
                     return {'key': token.str}
             
@@ -71,15 +72,15 @@ class ASTEncoder(json.JSONEncoder):
 
 
 def process(code, syntaxInfo, debugInfoDir=None):
-
+    terms, keys, nonterms, axiom = load_dsl_info(syntaxInfo["info"]["supportInfo"])
     if not debugInfoDir is None:
         debugInfoDir = pathlib.Path(debugInfoDir)
         if not debugInfoDir.exists():
             os.mkdir(debugInfoDir)
     syntaxDesription = GetSyntaxDesription(syntaxInfo)
-    tokenList = Tokenize(code)
+    tokenList = Tokenize(code, terms, keys)
     __RenderTokenStream('token_stream_after_scanner', tokenList, debugInfoDir)
-    ast = BuildAst(syntaxDesription, dsl_info.axiom, tokenList)
+    ast = BuildAst(syntaxDesription, axiom, tokenList)
     __RenderAst('ast', ast, debugInfoDir)
     return (ASTEncoder().encode(ast))
 
