@@ -1,0 +1,13 @@
+digraph ALG_TYPE {
+    start [label=ALG_TYPE shape=plaintext]
+    proc [label="proc" shape=oval]
+    func [label="func" shape=oval]
+    iter [label="iter" shape=oval]
+    end [label="" shape=point]
+    start -> proc
+    start -> func
+    start -> iter
+    proc -> end
+    func -> end
+    iter -> end
+}

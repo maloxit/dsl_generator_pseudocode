@@ -1,0 +1,14 @@
+digraph ALG_IN {
+    start [label=ALG_IN shape=plaintext]
+    br_open [label="(" shape=oval]
+    br_close [label=")" shape=oval]
+    param_list [label=PARAM_LIST shape=box]
+    pragma [label=PRAGMA shape=box]
+    end [label="" shape=point]
+    start -> br_open
+    br_open -> param_list
+    param_list -> br_close
+    br_close -> pragma
+    br_close -> end
+    pragma -> end
+}

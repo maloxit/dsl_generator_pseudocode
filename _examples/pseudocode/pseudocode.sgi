@@ -1,0 +1,26 @@
+TERMINALS:
+    name ::= r"[a-zA-Z_][\w]*';
+    number ::= r"[0-9]+[.]{0,1}[0-9]*';
+    string ::= '\"(\\.|[^\\\"])*\"';
+
+KEYS: '\n'; ';'; '@@'; '@set'; '@value'; '@unary'; '@infix'; '@type'; '@set'; '@seq'; 'factorial'; 'floor'; 'ceil'; 'abs'; 'end algorithm'; 'end while'; 'end if'; 'end for'; '->'; '-'; 'return'; '('; ')'; '['; ']'; '{'; '}'; ','; '...'; '..'; '.'; ':='; ':'; 'for'; 'do'; 'if'; 'then'; 'elseif'; 'else'; 'while'; 'next for'; 'repeat'; 'until'; 'yield'; 'select'; 'goto'; 'proc'; 'func'; 'iter'; 'array'; 'of'; 'struct'; '\uparrow'; 'natural'; 'integer'; 'rational'; 'binary'; '=='; '!='; '+'; '/'; '*'; 'div'; 'mod'; '&'; '|'; '\cup'; '\cap'; '\in'; '\notin'; '\subset'; '\'; 'pow'; '<='; '>='; '<'; '>'. 
+
+NONTERMINALS:
+    S;
+    ALG;
+    ALG_HEAD;
+    ALG_TYPE;
+    FUNC_NAME;
+    ALG_IN;
+    ALG_OUT;
+    CODE_BLOCK;
+    COMMAND;
+    PRAGMA;
+    PRAGMA_NAME;
+    RETURN;
+    PARAM_LIST;
+    VAR;
+    VAR_NAME;
+    TYPE.
+
+AXIOM: EXPRESSIONS.

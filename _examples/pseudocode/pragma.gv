@@ -1,0 +1,19 @@
+digraph PRAGMA {
+    start [label=PRAGMA shape=plaintext]
+    pragma_marker [label="@@" shape=oval]
+    pragma_name [label=PRAGMA_NAME shape=box]
+    br_open [label="{" shape=oval]
+    br_close [label="}" shape=oval]
+    comma [label="," shape=oval]
+    term_string [label=string shape=diamond]
+    end [label="" shape=point]
+    start -> pragma_marker
+    pragma_marker -> pragma_name
+    pragma_name -> br_open
+    pragma_name -> end
+    br_open -> term_string
+    term_string -> comma
+    term_string -> br_close
+    comma -> term_string
+    br_close -> end
+}

@@ -1,0 +1,7 @@
+digraph VAR {
+    start [label=VAR shape=plaintext]
+    var_name [label=VAR_NAME shape=box]
+    end [label="" shape=point]
+    start -> var_name
+    var_name -> end
+}

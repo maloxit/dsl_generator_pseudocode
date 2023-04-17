@@ -1,0 +1,15 @@
+digraph ALG {
+    start [label=ALG shape=plaintext]
+    alg_head [label=ALG_HEAD shape=box]
+    code_block [label=CODE_BLOCK shape=box]
+    nl_1 [label="\n" shape=oval]
+    nl_2 [label="\n" shape=oval]
+    end_alg [label="end algorithm" shape=oval]
+    end [label="" shape=point]
+    start -> alg_head
+    alg_head -> nl_1
+    nl_1 -> code_block
+    code_block -> nl_2
+    nl_2 -> end_alg
+    end_alg -> end
+}

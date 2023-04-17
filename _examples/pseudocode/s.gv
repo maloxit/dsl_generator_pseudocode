@@ -1,0 +1,15 @@
+digraph S {
+    start [label=S shape=plaintext]
+    alg [label=ALG shape=box]
+    code_block [label=CODE_BLOCK shape=box]
+    nl [label="\n" shape=oval]
+    end [label="" shape=point]
+    start -> alg
+    start -> code_block
+    alg -> nl
+    alg -> end
+    code_block -> nl
+    code_block -> end
+    nl -> alg
+    nl -> code_block
+}

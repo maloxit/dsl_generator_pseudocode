@@ -1,0 +1,11 @@
+digraph PARAM_LIST {
+    start [label=PARAM_LIST shape=plaintext]
+    var [label=VAR shape=box]
+    comma [label="," shape=oval]
+    end [label="" shape=point]
+    start -> var
+    start -> end
+    var -> comma
+    var -> end
+    comma -> var
+}

@@ -1,0 +1,10 @@
+digraph COMMAND {
+    start [label=COMMAND shape=plaintext]
+    return [label=RETURN shape=box]
+    pragma [label=PRAGMA shape=box]
+    end [label="" shape=point]
+    start -> return
+    return -> pragma
+    return -> end
+    pragma -> end
+}

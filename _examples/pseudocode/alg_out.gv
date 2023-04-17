@@ -1,0 +1,9 @@
+digraph ALG_OUT {
+    start [label=ALG_OUT shape=plaintext]
+    arrow [label="->" shape=oval]
+    pragma [label=PRAGMA shape=box]
+    end [label="" shape=point]
+    start -> arrow
+    arrow -> pragma
+    pragma -> end
+}

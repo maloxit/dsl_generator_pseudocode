@@ -1,0 +1,9 @@
+digraph RETURN {
+    start [label=RETURN shape=plaintext]
+    key_return [label="return" shape=oval]
+    var [label=VAR shape=box]
+    end [label="" shape=point]
+    start -> key_return
+    key_return -> var
+    var -> end
+}

@@ -1,0 +1,20 @@
+digraph CODE_BLOCK {
+    start [label=CODE_BLOCK shape=plaintext]
+    command [label=COMMAND shape=box]
+    pragma [label=PRAGMA shape=box]
+    nl [label="\n" shape=oval]
+    semicol [label=";" shape=oval]
+    end [label="" shape=point]
+    start -> command
+    start -> pragma
+    command -> nl
+    command -> semicol
+    command -> end
+    pragma -> nl
+    pragma -> semicol
+    pragma -> end
+    nl -> command
+    nl -> pragma
+    semicol -> command
+    semicol -> pragma
+}

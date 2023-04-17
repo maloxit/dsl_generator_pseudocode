@@ -1,0 +1,14 @@
+digraph ALG_HEAD {
+    start [label=ALG_HEAD shape=plaintext]
+    alg_type [label=ALG_TYPE shape=box]
+    func_name [label=FUNC_NAME shape=box]
+    alg_in [label=ALG_IN shape=box]
+    alg_out [label=ALG_OUT shape=box]
+    end [label="" shape=point]
+    start -> alg_type
+    alg_type -> func_name
+    func_name -> alg_in
+    alg_in -> alg_out
+    alg_in -> end
+    alg_out -> end
+}
