@@ -14,7 +14,6 @@ tokenRegularExpressions = [
     (Terminal.string, r"\A\"(\\.|[^\\\"])*\"")
 ]
 
-
 keys = [
     ('\\n', Terminal.key),
     (';', Terminal.key),
@@ -113,6 +112,13 @@ class Nonterminal(Enum):
     VAR = 'VAR'
     VAR_NAME = 'VAR_NAME'
     TYPE = 'TYPE'
+    CONTROL_OPERATOR = "CONTROL_OPERATOR"
+    BRANCHING = "BRANCHING"
+    LOOP = "LOOP"
+    TRANSITION_OPERATOR = "TRANSITION_OPERATOR"
+    FOR = "FOR"
+    WHILE = "WHILE"
+    UNTIL = "UNTIL"
 
 
 axiom = Nonterminal.S
