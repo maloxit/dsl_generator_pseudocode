@@ -70,14 +70,8 @@ class ASTEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def process(code, debugInfoDir=None):
-    syntaxInfo = {
-        "type": "virt",
-        "info": {
-            "supportInfo": "_examples/pseudocode/pseudocode.sgi",
-            "diagrams": "_examples/pseudocode"
-        }
-    }
+def process(code, syntaxInfo, debugInfoDir=None):
+
     if not debugInfoDir is None:
         debugInfoDir = pathlib.Path(debugInfoDir)
         if not debugInfoDir.exists():
@@ -92,6 +86,13 @@ def process(code, debugInfoDir=None):
 
 
 if __name__ == "__main__":
+    syntaxInfo = {
+        "type": "virt",
+        "info": {
+            "supportInfo": "_examples/pseudocode/pseudocode.sgi",
+            "diagrams": "_examples/pseudocode"
+        }
+    }
     code ='''return B
 return G
 func GetSet (n) -> @@comment{"Множество $B$ целых чисел от $2$ до $n$"}
@@ -107,7 +108,7 @@ return B
 func GetSet (n) -> @@comment{"Множество $B$ целых чисел от $2$ до $n$"}
     return B
 end algorithm'''
-    print(process(code, "other"))
+    print(process(code, syntaxInfo, "other"))
 
 
 
