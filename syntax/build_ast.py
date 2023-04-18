@@ -13,6 +13,88 @@ class TreeNode:
         self.attribute = None
 
 
+def __BuildAstNonterm(grammarDescription, tokenList, childs, commands, pos, nonterminal, end):
+    node = grammarDescription[nonterminal]
+    newToken = tokenList[pos]
+    for rule_index, rule in enumerate(node.nextNodes):
+        success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
+        if success:
+            return True, new_pos
+    return False, pos
+
+
+def __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end):
+    
+    start_childs_len = len(childs)
+    start_commands_len = len(commands)
+    rule = node.nextNodes[rule_index]
+    newNonterm = None
+
+    if pos >= end:
+        if NodeType.END == rule[0].type:
+            commands.append(rule[1])
+            return True, pos
+        else:
+            return False, pos
+    newToken = tokenList[pos]
+    if NodeType.END == rule[0].type:
+        commands.append(rule[1])
+        return True, pos
+    elif NodeType.KEY == rule[0].type and Token.Type.KEY == newToken.type and newToken.str == rule[0].str:
+        element = TreeNode(TreeNode.Type.TOKEN)
+        element.attribute = newToken.attribute
+        element.token = newToken
+        childs.append(element)
+        commands.append(rule[1])
+        pos += 1
+        node = rule[0]
+    elif NodeType.TERMINAL == rule[0].type and Token.Type.TERMINAL == newToken.type and newToken.terminalType == rule[0].terminal:
+        element = TreeNode(TreeNode.Type.TOKEN)
+        element.attribute = newToken.attribute
+        element.token = newToken
+        childs.append(element)
+        commands.append(rule[1])
+        pos += 1
+        node = rule[0]
+    elif NodeType.NONTERMINAL == rule[0].type:
+        if rule[0].nonterminal not in grammarDescription:
+            raise Exception(f"Failed to find '{rule[0].nonterminal}' description")
+        newNonterm = TreeNode(TreeNode.Type.NONTERMINAL)
+        newNonterm.nonterminalType = rule[0].nonterminal
+        newNonterm.childs = []
+        newNonterm.commands = []
+        childs.append(newNonterm)
+        commands.append(rule[1])
+        node = rule[0]
+    else:
+        return False, pos
+    
+    if newNonterm:
+        success, new_pos = __BuildAstNonterm(grammarDescription, tokenList, newNonterm.childs, newNonterm.commands, pos, newNonterm.nonterminalType, end)
+        if success:
+            pos = new_pos
+            for rule_index, rule in enumerate(node.nextNodes):
+                success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
+                if success:
+                    return True, new_pos
+            
+    else:
+        for rule_index, rule in enumerate(node.nextNodes):
+            success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
+            if success:
+                return True, new_pos
+            
+    
+    while len(childs) > start_childs_len:
+        childs.pop()
+    while len(commands) > start_commands_len:
+        commands.pop()
+    return False, pos
+    
+    
+
+
+
 def __BuildAstElement(grammarDescription, nonterminal, tokenList, start, end):
     if nonterminal not in grammarDescription:
         raise Exception(f"Failed to find '{nonterminal}' description")
@@ -91,8 +173,13 @@ def __BuildAstElement(grammarDescription, nonterminal, tokenList, start, end):
 
 
 def BuildAst(grammarDescription, axiom, tokenList):
-    ast, pos = __BuildAstElement(grammarDescription, axiom, tokenList, 0, len(tokenList))
-    if pos != len(tokenList):
-        raise Exception(f"Only part of code was successfully processed")
-    return ast
+    ast = TreeNode(TreeNode.Type.NONTERMINAL)
+    ast.nonterminalType = axiom
+    ast.childs = []
+    ast.commands = []
+    success, new_pos = __BuildAstNonterm(grammarDescription, tokenList, ast.childs, ast.commands, 0, ast.nonterminalType, len(tokenList))
+    if success:
+        return ast
+    else:
+        raise Exception(f"Fail")
     
