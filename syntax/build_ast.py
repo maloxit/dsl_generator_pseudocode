@@ -12,174 +12,150 @@ class TreeNode:
         self.type = type
         self.attribute = None
 
+class AstBuilder():
 
-def __BuildAstNonterm(grammarDescription, tokenList, childs, commands, pos, nonterminal, end):
-    node = grammarDescription[nonterminal]
-    newToken = tokenList[pos]
-    for rule_index, rule in enumerate(node.nextNodes):
-        success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
-        if success:
-            return True, new_pos
-    return False, pos
+    def __init__(self, grammar, tokenList, axiom) -> None:
+        self.states = []
+        self.grammar = grammar
+        self.tokenList = tokenList
+        self.end = len(tokenList)
+        self.axiom = axiom
+        self.states = []
 
-
-def __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end):
     
-    start_childs_len = len(childs)
-    start_commands_len = len(commands)
-    rule = node.nextNodes[rule_index]
-    newNonterm = None
-
-    if pos >= end:
-        if NodeType.END == rule[0].type:
-            commands.append(rule[1])
-            return True, pos
-        else:
-            return False, pos
-    newToken = tokenList[pos]
-    if NodeType.END == rule[0].type:
-        commands.append(rule[1])
-        return True, pos
-    elif NodeType.KEY == rule[0].type and Token.Type.KEY == newToken.type and newToken.str == rule[0].str:
-        element = TreeNode(TreeNode.Type.TOKEN)
-        element.attribute = newToken.attribute
-        element.token = newToken
-        childs.append(element)
-        commands.append(rule[1])
-        pos += 1
-        node = rule[0]
-    elif NodeType.TERMINAL == rule[0].type and Token.Type.TERMINAL == newToken.type and newToken.terminalType == rule[0].terminal:
-        element = TreeNode(TreeNode.Type.TOKEN)
-        element.attribute = newToken.attribute
-        element.token = newToken
-        childs.append(element)
-        commands.append(rule[1])
-        pos += 1
-        node = rule[0]
-    elif NodeType.NONTERMINAL == rule[0].type:
-        if rule[0].nonterminal not in grammarDescription:
-            raise Exception(f"Failed to find '{rule[0].nonterminal}' description")
-        newNonterm = TreeNode(TreeNode.Type.NONTERMINAL)
-        newNonterm.nonterminalType = rule[0].nonterminal
-        newNonterm.childs = []
-        newNonterm.commands = []
-        childs.append(newNonterm)
-        commands.append(rule[1])
-        node = rule[0]
-    else:
-        return False, pos
+    def __ret(self):
+        self.states[-1]['rule_index'] += 1
+        while self.states[-1]['rule_index'] >= len(self.states[-1]['node'].nextNodes):
+            self.states.pop()
+            if len(self.states) == 0:
+                raise Exception(f"Fail")
+            self.states[-1]['rule_index'] += 1
     
-    if newNonterm:
-        success, new_pos = __BuildAstNonterm(grammarDescription, tokenList, newNonterm.childs, newNonterm.commands, pos, newNonterm.nonterminalType, end)
-        if success:
-            pos = new_pos
-            for rule_index, rule in enumerate(node.nextNodes):
-                success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
-                if success:
-                    return True, new_pos
+    def __walk(self):
+        self.states = [{
+            'parent_state': None,
+            'pos': 0,
+            'node': self.grammar[self.axiom],
+            'rule_index': 0,
+            'nonterm': self.axiom
+        }]
+        while True:
+            state = self.states[-1]
             
-    else:
-        for rule_index, rule in enumerate(node.nextNodes):
-            success, new_pos = __BuildAstPoint(grammarDescription, tokenList, childs, commands, pos, node, rule_index, end)
-            if success:
-                return True, new_pos
-            
-    
-    while len(childs) > start_childs_len:
-        childs.pop()
-    while len(commands) > start_commands_len:
-        commands.pop()
-    return False, pos
-    
-    
+            pos = state['pos']
+            node = state['node']
+            rule = node.nextNodes[state['rule_index']]
 
-
-
-def __BuildAstElement(grammarDescription, nonterminal, tokenList, start, end):
-    if nonterminal not in grammarDescription:
-        raise Exception(f"Failed to find '{nonterminal}' description")
-    pos = start
-    result = TreeNode(TreeNode.Type.NONTERMINAL)
-    result.nonterminalType = nonterminal
-    result.childs = []
-    result.commands = []
-    returns = 0
-    node = grammarDescription[nonterminal]
-    state_stack = [{'returns': 0, 'pos': pos, 'childs_count': 0, 'commands_count': 0, 'node': node}]
-    while pos < end and NodeType.END != node.type:
-        newToken = tokenList[pos]
-        exit = None
-        success = False
-        for i in range(returns, len(node.nextNodes)):
-            next = node.nextNodes[i]
-            if NodeType.END == next[0].type:
-                exit = next
+            if NodeType.END == rule[0].type:
+                parent_state = state['parent_state']
+                if parent_state is None:
+                    if pos == self.end:
+                        return
+                    else:
+                        self.__ret()
+                        continue    
+                self.states.append({
+                    'parent_state': parent_state['parent_state'],
+                    'pos': pos,
+                    'node': parent_state['node'].nextNodes[parent_state['rule_index']][0],
+                    'rule_index': 0,
+                    'nonterm': parent_state['nonterm']
+                })
                 continue
-            if NodeType.KEY == next[0].type and Token.Type.KEY == newToken.type and newToken.str == next[0].str:
-                element = TreeNode(TreeNode.Type.TOKEN)
-                element.attribute = newToken.attribute
-                element.token = newToken
-                result.childs.append(element)
-                result.commands.append(next[1])
-                pos += 1
-                node = next[0]
-                success = True
-                break
-            if NodeType.TERMINAL == next[0].type and Token.Type.TERMINAL == newToken.type and newToken.terminalType == next[0].terminal:
-                element = TreeNode(TreeNode.Type.TOKEN)
-                element.attribute = newToken.attribute
-                element.token = newToken
-                result.childs.append(element)
-                result.commands.append(next[1])
-                pos += 1
-                node = next[0]
-                success = True
-                break
-            if NodeType.NONTERMINAL == next[0].type:
-                try:
-                    res = __BuildAstElement(grammarDescription, next[0].nonterminal, tokenList, pos, end)
-                    pos = res[1]
-                    result.childs.append(res[0])
-                    result.commands.append(next[1])
-                    node = next[0]
-                    success = True
-                except Exception:
-                    continue
-                break
-        if success:
-            state_stack.append({'returns': 0, 'pos': pos, 'childs_count': len(result.childs), 'commands_count': len(result.commands), 'node': node})
+            elif NodeType.NONTERMINAL == rule[0].type:
+                if rule[0].nonterminal not in self.grammar:
+                    raise Exception(f"Failed to find '{rule[0].nonterminal}' description")
+                self.states.append({
+                    'parent_state': state,
+                    'pos': pos,
+                    'node': self.grammar[rule[0].nonterminal],
+                    'rule_index': 0,
+                    'nonterm': rule[0].nonterminal
+                })
+                continue
+            if pos >= self.end:
+                self.__ret()
+                continue
+            newToken = self.tokenList[pos]
+            if NodeType.KEY == rule[0].type and Token.Type.KEY == newToken.type and newToken.str == rule[0].str:
+                self.states.append({
+                    'parent_state': state['parent_state'],
+                    'pos': pos+1,
+                    'node': rule[0],
+                    'rule_index': 0,
+                    'nonterm': state['nonterm']
+                })
+                continue
+            elif NodeType.TERMINAL == rule[0].type and Token.Type.TERMINAL == newToken.type and newToken.terminalType == rule[0].terminal:
+                self.states.append({
+                    'parent_state': state['parent_state'],
+                    'pos': pos+1,
+                    'node': rule[0],
+                    'rule_index': 0,
+                    'nonterm': state['nonterm']
+                })
+                continue
+
+            self.__ret()
             continue
-        if exit:
-            node = exit[0]
-            result.commands.append(exit[1])
-        else:
-            while len(state_stack) != 0:
-                state_stack[-1]['returns'] += 1
-                if state_stack[-1]['returns'] == len(state_stack[-1]['node'].nextNodes):
-                    state_stack.pop()
-                else:
-                    break
-            if len(state_stack) != 0:
-                returns = state_stack[-1]['returns']
-                pos = state_stack[-1]['pos']
-                while len(result.childs) > state_stack[-1]['childs_count']:
-                    result.childs.pop()
-                while len(result.commands) > state_stack[-1]['commands_count']:
-                    result.commands.pop()
-                node = state_stack[-1]['node']
-            else:
-                raise Exception(f"Failed to process token '{newToken.str}'")
-    return result, pos
+    
+    def build(self):
+        ast = TreeNode(TreeNode.Type.NONTERMINAL)
+        ast.nonterminalType = self.axiom
+        ast.childs = []
+        ast.commands = []
+        nodes_stack = [ast]
+        self.__walk()
+        for state in self.states:
+            pos = state['pos']
+            node = state['node']
+            rule = node.nextNodes[state['rule_index']]
+
+            if NodeType.END == rule[0].type:
+                parent_state = state['parent_state']
+                if parent_state is None:
+                    if pos == self.end:
+                        nodes_stack[-1].commands.append(rule[1])
+                        return ast
+                    else:
+                        raise Exception(f"Fail")
+                nodes_stack[-1].commands.append(rule[1])
+                nodes_stack.pop()
+                continue
+            elif NodeType.NONTERMINAL == rule[0].type:
+                if rule[0].nonterminal not in self.grammar:
+                    raise Exception(f"Failed to find '{rule[0].nonterminal}' description")
+                newNonterm = TreeNode(TreeNode.Type.NONTERMINAL)
+                newNonterm.nonterminalType = rule[0].nonterminal
+                newNonterm.childs = []
+                newNonterm.commands = []
+                nodes_stack[-1].childs.append(newNonterm)
+                nodes_stack[-1].commands.append(rule[1])
+                node = rule[0]
+                nodes_stack.append(newNonterm)
+                continue
+            if pos >= self.end:
+                raise Exception(f"Fail")
+            newToken = self.tokenList[pos]
+            if NodeType.KEY == rule[0].type and Token.Type.KEY == newToken.type and newToken.str == rule[0].str:
+                element = TreeNode(TreeNode.Type.TOKEN)
+                element.attribute = newToken.attribute
+                element.token = newToken
+                nodes_stack[-1].childs.append(element)
+                nodes_stack[-1].commands.append(rule[1])
+                continue
+            elif NodeType.TERMINAL == rule[0].type and Token.Type.TERMINAL == newToken.type and newToken.terminalType == rule[0].terminal:
+                element = TreeNode(TreeNode.Type.TOKEN)
+                element.attribute = newToken.attribute
+                element.token = newToken
+                nodes_stack[-1].childs.append(element)
+                nodes_stack[-1].commands.append(rule[1])
+                continue
+
+            raise Exception(f"Fail")
+        return ast
 
 
 def BuildAst(grammarDescription, axiom, tokenList):
-    ast = TreeNode(TreeNode.Type.NONTERMINAL)
-    ast.nonterminalType = axiom
-    ast.childs = []
-    ast.commands = []
-    success, new_pos = __BuildAstNonterm(grammarDescription, tokenList, ast.childs, ast.commands, 0, ast.nonterminalType, len(tokenList))
-    if success:
-        return ast
-    else:
-        raise Exception(f"Fail")
+    return AstBuilder(grammarDescription, tokenList, axiom).build()
     
